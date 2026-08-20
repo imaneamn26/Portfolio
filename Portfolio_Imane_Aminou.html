@@ -1,0 +1,882 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Imane Aminou — Data & IA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #FBFAFF;
+    --surface: #FFFFFF;
+    --ink: #14162B;
+    --ink-soft: #5B5F79;
+    --ink-faint: #92899FA6;
+    --ink-faint: #8B8AA3;
+
+    /* Palette catégorielle "dashboard" — une couleur par étape du pipeline / catégorie,
+       comme la légende d'un vrai graphique Power BI */
+    --violet: #7C5CFC;   --violet-soft: #EFEAFF;
+    --coral:  #FF5C87;   --coral-soft:  #FFE7EE;
+    --amber:  #FFB020;   --amber-soft:  #FFF2D9;
+    --cyan:   #17B6D0;   --cyan-soft:   #DFF7FA;
+    --green:  #22C55E;   --green-soft:  #E3FAEA;
+
+    --accent: var(--violet);
+    --accent-soft: var(--violet-soft);
+
+    --line: #ECE8F7;
+    --radius: 14px;
+    --font-display: 'Space Grotesk', sans-serif;
+    --font-mono: 'IBM Plex Mono', monospace;
+    --font-body: 'Inter', sans-serif;
+  }
+
+  *{ box-sizing: border-box; }
+  html{ scroll-behavior: smooth; }
+  body{
+    margin:0;
+    background:
+      radial-gradient(760px 420px at 88% -8%, rgba(124,92,252,0.14), transparent 60%),
+      radial-gradient(620px 420px at -6% 18%, rgba(23,182,208,0.13), transparent 60%),
+      radial-gradient(700px 500px at 60% 100%, rgba(255,92,135,0.08), transparent 60%),
+      var(--bg);
+    background-attachment: fixed;
+    color: var(--ink);
+    font-family: var(--font-body);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  a{ color: inherit; }
+  img{ max-width:100%; display:block; }
+
+  ::selection{ background: var(--violet); color:#fff; }
+
+  /* ---------- Layout shell ---------- */
+  .shell{
+    display: grid;
+    grid-template-columns: 260px 1fr;
+    min-height: 100vh;
+  }
+
+  /* ---------- Sidebar / pipeline nav ---------- */
+  .sidebar{
+    position: sticky;
+    top:0;
+    height: 100vh;
+    padding: 40px 28px;
+    border-right: 1px solid var(--line);
+    display:flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  .brand{
+    display:flex;
+    flex-direction: column;
+    gap:4px;
+    margin-bottom: 48px;
+  }
+  .brand .mark{
+    width:36px; height:36px;
+    border-radius:9px;
+    background: linear-gradient(135deg, var(--violet), var(--cyan));
+    color:#fff;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    letter-spacing: -0.5px;
+    margin-bottom: 14px;
+    box-shadow: 0 6px 16px rgba(124,92,252,0.35);
+  }
+  .brand .name{
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 19px;
+    letter-spacing: -0.02em;
+  }
+  .brand .role{
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    color: var(--ink-faint);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  .pipeline-nav{
+    position: relative;
+    display:flex;
+    flex-direction: column;
+    gap: 0;
+  }
+  .pipeline-nav::before{
+    content:"";
+    position:absolute;
+    left: 7px;
+    top: 10px;
+    bottom: 10px;
+    width: 1px;
+    background: var(--line);
+  }
+  .pipeline-nav a{
+    position: relative;
+    text-decoration:none;
+    display:flex;
+    align-items:center;
+    gap: 14px;
+    padding: 11px 4px;
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    color: var(--ink-soft);
+    letter-spacing: 0.03em;
+    transition: color .15s ease;
+  }
+  .pipeline-nav a .dot{
+    width: 15px; height:15px;
+    border-radius:50%;
+    background: var(--surface);
+    border: 1.5px solid var(--ink-faint);
+    flex-shrink:0;
+    z-index:1;
+    transition: all .15s ease;
+  }
+  .pipeline-nav a:hover{ color: var(--ink); }
+  .pipeline-nav a:hover .dot{ border-color: var(--accent); }
+  .pipeline-nav a .stage{ font-weight:600; color: var(--ink); }
+  .pipeline-nav a .label{ color: var(--ink-faint); font-family: var(--font-body); font-size: 12px; }
+
+  .pipeline-nav a:nth-child(1) .stage{ color: var(--violet); }
+  .pipeline-nav a:nth-child(1):hover .dot{ border-color: var(--violet); background: var(--violet-soft); }
+  .pipeline-nav a:nth-child(2) .stage{ color: var(--coral); }
+  .pipeline-nav a:nth-child(2):hover .dot{ border-color: var(--coral); background: var(--coral-soft); }
+  .pipeline-nav a:nth-child(3) .stage{ color: var(--amber); }
+  .pipeline-nav a:nth-child(3):hover .dot{ border-color: var(--amber); background: var(--amber-soft); }
+  .pipeline-nav a:nth-child(4) .stage{ color: var(--cyan); }
+  .pipeline-nav a:nth-child(4):hover .dot{ border-color: var(--cyan); background: var(--cyan-soft); }
+  .pipeline-nav a:nth-child(5) .stage{ color: var(--green); }
+  .pipeline-nav a:nth-child(5):hover .dot{ border-color: var(--green); background: var(--green-soft); }
+  .pipeline-nav a:nth-child(6) .stage{ color: var(--violet); }
+  .pipeline-nav a:nth-child(6):hover .dot{ border-color: var(--violet); background: var(--violet-soft); }
+  .pipeline-nav a:nth-child(7) .stage{ color: var(--coral); }
+  .pipeline-nav a:nth-child(7):hover .dot{ border-color: var(--coral); background: var(--coral-soft); }
+
+  .sidebar-foot{
+    display:flex;
+    flex-direction: column;
+    gap:10px;
+  }
+  .avail-chip{
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: #0E9F52;
+    background: var(--green-soft);
+    border-radius: 999px;
+    padding: 7px 12px;
+    display:inline-flex;
+    align-items:center;
+    gap:7px;
+    width: fit-content;
+    font-weight: 600;
+  }
+  .avail-chip::before{
+    content:"";
+    width:6px; height:6px;
+    border-radius:50%;
+    background: var(--green);
+    box-shadow: 0 0 0 3px var(--green-soft);
+  }
+  .sidebar-links{ display:flex; gap:14px; font-family: var(--font-mono); font-size:11.5px; }
+  .sidebar-links a{ text-decoration:none; color: var(--ink-soft); }
+  .sidebar-links a:hover{ color: var(--accent); }
+
+  /* mobile nav toggle */
+  .mobile-topbar{ display:none; }
+
+  /* ---------- Main ---------- */
+  main{ padding: 64px 64px 90px; max-width: 980px; }
+  section{ scroll-margin-top: 40px; margin-bottom: 108px; }
+  .eyebrow{
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-bottom: 18px;
+    font-weight: 600;
+  }
+  .eyebrow::after{
+    content:"";
+    height:1px;
+    flex:1;
+    background: var(--line);
+  }
+  .eyebrow.c-violet{ color: var(--violet); }
+  .eyebrow.c-coral{ color: var(--coral); }
+  .eyebrow.c-amber{ color: #C57F00; }
+  .eyebrow.c-cyan{ color: #0E8DA3; }
+  .eyebrow.c-green{ color: #0E9F52; }
+  h1,h2,h3{ font-family: var(--font-display); letter-spacing: -0.02em; margin:0; }
+  h2{ font-size: 28px; margin-bottom: 28px; }
+  .grad-text{
+    background: linear-gradient(100deg, var(--violet), var(--coral) 55%, var(--amber));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  /* ---------- Hero ---------- */
+  .hero{ padding-top: 20px; margin-bottom: 130px; }
+  .hero h1{
+    font-size: clamp(34px, 4.6vw, 54px);
+    line-height: 1.08;
+    max-width: 15ch;
+    margin-bottom: 22px;
+  }
+  .hero .lede{
+    font-size: 17px;
+    color: var(--ink-soft);
+    max-width: 54ch;
+    margin-bottom: 36px;
+  }
+  .hero .cta-row{ display:flex; gap:12px; flex-wrap:wrap; margin-bottom: 64px; }
+  .btn{
+    font-family: var(--font-body);
+    font-weight: 600;
+    font-size: 14px;
+    padding: 12px 20px;
+    border-radius: 999px;
+    text-decoration: none;
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    border: 1px solid transparent;
+    transition: transform .15s ease, box-shadow .15s ease;
+  }
+  .btn:hover{ transform: translateY(-1px); }
+  .btn-primary{ background: linear-gradient(135deg, var(--violet), #6A4CF0); color:#fff; box-shadow: 0 6px 18px rgba(124,92,252,0.3); }
+  .btn-primary:hover{ box-shadow: 0 10px 24px rgba(124,92,252,0.42); }
+  .btn-ghost{ background: var(--surface); color: var(--ink); border-color: var(--line); }
+  .btn-ghost:hover{ border-color: var(--violet); color: var(--violet); }
+
+  /* pipeline diagram signature */
+  .pipeline-diagram{
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 34px 28px 26px;
+  }
+  .pipeline-diagram .diagram-label{
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--ink-faint);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 20px;
+  }
+  .pipeline-svg-wrap{ width:100%; overflow-x:auto; }
+  .pipeline-svg{ width:100%; min-width: 560px; height:auto; display:block; }
+  .flow-path{
+    stroke: url(#flowGradient);
+    stroke-width: 2.5;
+    fill:none;
+    stroke-dasharray: 6 7;
+    animation: dash 1.4s linear infinite;
+  }
+  @keyframes dash{ to{ stroke-dashoffset: -26; } }
+  .flow-node circle{ fill: var(--surface); stroke: var(--ink); stroke-width: 1.8; }
+  .flow-node text.node-label{
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 600;
+    fill: var(--ink);
+    text-anchor: middle;
+  }
+  .flow-node text.node-sub{
+    font-family: var(--font-body);
+    font-size: 10px;
+    fill: var(--ink-faint);
+    text-anchor: middle;
+  }
+  .flow-node.n-violet circle{ fill: var(--violet); stroke: var(--violet); }
+  .flow-node.n-coral circle{ fill: var(--coral); stroke: var(--coral); }
+  .flow-node.n-amber circle{ fill: var(--amber); stroke: var(--amber); }
+  .flow-node.n-cyan circle{ fill: var(--cyan); stroke: var(--cyan); }
+  .flow-node.n-green circle{ fill: var(--green); stroke: var(--green); }
+
+  /* ---------- Profil ---------- */
+  .profil-grid{ display:grid; grid-template-columns: 1.5fr 1fr; gap: 40px; }
+  .profil-text p{ color: var(--ink-soft); font-size: 15.5px; max-width: 56ch; }
+  .traits{ display:flex; flex-direction:column; gap: 18px; }
+  .trait-card{
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 18px 20px;
+  }
+  .trait-card .k{ font-family: var(--font-mono); font-size:10.5px; color: var(--ink-faint); text-transform:uppercase; letter-spacing:.06em; margin-bottom:6px; }
+  .trait-card .v{ font-size: 14.5px; font-weight: 600; }
+  .interests{ display:flex; flex-wrap:wrap; gap:8px; margin-top:4px; }
+  .interest-pill{
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 6px 12px;
+    color: var(--ink-soft);
+  }
+
+  /* ---------- Experience / project cards ---------- */
+  .card{
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 30px 32px;
+    margin-bottom: 22px;
+  }
+  .card-head{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    gap: 20px;
+    margin-bottom: 6px;
+    flex-wrap: wrap;
+  }
+  .card-title{ font-family: var(--font-display); font-size: 20px; font-weight:600; }
+  .card-org{ font-size: 14px; color: var(--ink-soft); margin-top:3px; }
+  .card-period{
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    color: var(--ink-faint);
+    white-space: nowrap;
+    padding-top: 4px;
+  }
+  .badge{
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-weight: 600;
+  }
+  .badge-progress{ background: var(--amber); color: #fff; }
+  .card-desc{ color: var(--ink-soft); font-size: 14.5px; margin: 14px 0 18px; max-width: 66ch; }
+
+  .kpi-row{ display:flex; gap:14px; flex-wrap:wrap; margin: 18px 0 20px; }
+  .kpi{
+    border-radius: 10px;
+    padding: 14px 18px;
+    min-width: 140px;
+    border: 1px solid transparent;
+  }
+  .kpi.k-violet{ background: var(--violet-soft); }
+  .kpi.k-coral{ background: var(--coral-soft); }
+  .kpi.k-amber{ background: var(--amber-soft); }
+  .kpi.k-cyan{ background: var(--cyan-soft); }
+  .kpi .num{ font-family: var(--font-display); font-size: 24px; font-weight:700; }
+  .kpi.k-violet .num{ color: var(--violet); }
+  .kpi.k-coral .num{ color: var(--coral); }
+  .kpi.k-amber .num{ color: #C57F00; }
+  .kpi.k-cyan .num{ color: #0E8DA3; }
+  .kpi .lbl{ font-family: var(--font-mono); font-size: 10.5px; color: var(--ink-soft); text-transform:uppercase; letter-spacing:.05em; margin-top:2px; }
+
+  .bullet-list{ list-style:none; padding:0; margin: 0 0 20px; display:flex; flex-direction:column; gap:10px; }
+  .bullet-list li{
+    position:relative;
+    padding-left: 20px;
+    font-size: 14.5px;
+    color: var(--ink);
+  }
+  .bullet-list li::before{
+    content:"";
+    position:absolute;
+    left:0; top:8px;
+    width:7px; height:7px;
+    border-radius:2px;
+    background: var(--bullet-color, var(--violet));
+  }
+  .bullet-list b{ font-weight:600; }
+
+  .tag-row{ display:flex; flex-wrap:wrap; gap:8px; }
+  .tag{
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    background: var(--accent-soft);
+    color: var(--accent);
+    border-radius: 999px;
+    padding: 6px 12px;
+    font-weight: 500;
+  }
+  .tag-row.tags-coral .tag{ background: var(--coral-soft); color: #D6255A; }
+  .tag-row.tags-amber .tag{ background: var(--amber-soft); color: #C57F00; }
+  .tag-row.tags-cyan .tag{ background: var(--cyan-soft); color: #0E8DA3; }
+  .tag-row.tags-violet .tag{ background: var(--violet-soft); color: var(--violet); }
+
+  /* two-column project grid for academic projects */
+  .project-grid{ display:grid; grid-template-columns: 1fr 1fr; gap:22px; }
+  @media (max-width: 760px){ .project-grid{ grid-template-columns: 1fr; } }
+
+  /* ---------- Compétences ---------- */
+  .skills-grid{ display:grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+  .skill-group{
+    background: var(--surface);
+    border:1px solid var(--line);
+    border-top: 3px solid var(--sk-color, var(--violet));
+    border-radius: var(--radius);
+    padding: 22px 24px;
+  }
+  .skill-group:nth-child(1){ --sk-color: var(--violet); }
+  .skill-group:nth-child(2){ --sk-color: var(--coral); }
+  .skill-group:nth-child(3){ --sk-color: var(--amber); }
+  .skill-group:nth-child(4){ --sk-color: var(--cyan); }
+  .skill-group:nth-child(5){ --sk-color: var(--green); }
+  .skill-group:nth-child(6){ --sk-color: var(--violet); }
+  .skill-group .g-title{
+    font-family: var(--font-mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    color: var(--ink-faint);
+    margin-bottom: 14px;
+  }
+  .skill-group .tag-row .tag{ background: var(--bg); color: var(--ink); border:1px solid var(--line); }
+
+  /* ---------- Formation timeline ---------- */
+  .timeline{ position:relative; padding-left: 26px; }
+  .timeline::before{ content:""; position:absolute; left:6px; top:6px; bottom:6px; width:2px; background: linear-gradient(180deg, var(--violet), var(--cyan), var(--green)); border-radius: 2px; }
+  .tl-item{ position:relative; padding-bottom: 30px; }
+  .tl-item:last-child{ padding-bottom:0; }
+  .tl-item::before{
+    content:"";
+    position:absolute;
+    left:-27px; top:5px;
+    width:13px; height:13px;
+    border-radius:50%;
+    background: var(--surface);
+    border: 2.5px solid var(--tl-color, var(--violet));
+  }
+  .tl-item:nth-child(1)::before{ --tl-color: var(--violet); }
+  .tl-item:nth-child(2)::before{ --tl-color: var(--cyan); }
+  .tl-item:nth-child(3)::before{ --tl-color: var(--green); }
+  .tl-period{ font-family: var(--font-mono); font-size:11px; color: var(--ink-faint); margin-bottom:4px; }
+  .tl-title{ font-weight:600; font-size:15.5px; }
+  .tl-sub{ font-size: 13.5px; color: var(--ink-soft); margin-top:2px; }
+
+  /* ---------- Contact ---------- */
+  .contact-grid{ display:grid; grid-template-columns: repeat(4, 1fr); gap:14px; }
+  @media (max-width: 760px){ .contact-grid{ grid-template-columns: 1fr 1fr; } }
+  .contact-card{
+    background: var(--surface);
+    border:1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 22px 20px;
+    text-decoration:none;
+    color: var(--ink);
+    display:flex;
+    flex-direction: column;
+    gap: 10px;
+    transition: border-color .15s ease, transform .15s ease, box-shadow .15s ease;
+  }
+  .contact-card:hover{ transform: translateY(-2px); }
+  .contact-card:nth-child(1):hover{ border-color: var(--violet); box-shadow: 0 10px 22px rgba(124,92,252,0.18); }
+  .contact-card:nth-child(2):hover{ border-color: var(--coral); box-shadow: 0 10px 22px rgba(255,92,135,0.18); }
+  .contact-card:nth-child(3):hover{ border-color: var(--cyan); box-shadow: 0 10px 22px rgba(23,182,208,0.18); }
+  .contact-card:nth-child(4):hover{ border-color: var(--green); box-shadow: 0 10px 22px rgba(34,197,94,0.18); }
+  .contact-card .c-label{ font-family: var(--font-mono); font-size: 10.5px; color: var(--ink-faint); text-transform:uppercase; letter-spacing:.06em; }
+  .contact-card .c-value{ font-weight:600; font-size: 14px; word-break: break-word; }
+
+  footer{
+    padding: 30px 64px 50px;
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    color: var(--ink-faint);
+    border-top: 1px solid var(--line);
+  }
+
+  /* ---------- Responsive ---------- */
+  @media (max-width: 980px){
+    .shell{ grid-template-columns: 1fr; }
+    .sidebar{ display:none; }
+    .mobile-topbar{
+      display:flex;
+      justify-content: space-between;
+      align-items:center;
+      padding: 18px 24px;
+      border-bottom: 1px solid var(--line);
+      position: sticky; top:0; background: var(--bg); z-index: 20;
+    }
+    .mobile-topbar .name{ font-family: var(--font-display); font-weight:700; font-size:16px; }
+    .mobile-topbar .avail-chip{ font-size:10px; padding:5px 10px; }
+    main{ padding: 40px 24px 70px; }
+    .profil-grid{ grid-template-columns: 1fr; }
+    .skills-grid{ grid-template-columns: 1fr; }
+    footer{ padding: 24px; }
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    html{ scroll-behavior:auto; }
+    .flow-path{ animation:none; }
+  }
+
+  :focus-visible{ outline: 2px solid var(--accent); outline-offset: 2px; }
+</style>
+</head>
+<body>
+
+<div class="mobile-topbar">
+  <span class="name">Imane Aminou</span>
+  <span class="avail-chip">Dispo. sept. 2026</span>
+</div>
+
+<div class="shell">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div>
+      <div class="brand">
+        <div class="mark">IA</div>
+        <div class="name">Imane Aminou</div>
+        <div class="role">Data &amp; Intelligence Artificielle</div>
+      </div>
+
+      <nav class="pipeline-nav" aria-label="Navigation du portfolio">
+        <a href="#profil"><span class="dot"></span><span class="stage">SRC</span><span class="label">Profil</span></a>
+        <a href="#experience"><span class="dot"></span><span class="stage">ETL</span><span class="label">Expérience</span></a>
+        <a href="#projet-bi"><span class="dot"></span><span class="stage">BI</span><span class="label">Projet en cours</span></a>
+        <a href="#projets"><span class="dot"></span><span class="stage">LAB</span><span class="label">Projets</span></a>
+        <a href="#competences"><span class="dot"></span><span class="stage">STACK</span><span class="label">Compétences</span></a>
+        <a href="#formation"><span class="dot"></span><span class="stage">EDU</span><span class="label">Formation</span></a>
+        <a href="#contact"><span class="dot"></span><span class="stage">JOIN</span><span class="label">Contact</span></a>
+      </nav>
+    </div>
+
+    <div class="sidebar-foot">
+      <span class="avail-chip">Disponible dès septembre 2026</span>
+      <div class="sidebar-links">
+        <a href="mailto:aminouimane605@gmail.com">Email</a>
+        <a href="https://linkedin.com/in/imane-aminou" target="_blank" rel="noopener">LinkedIn</a>
+        <a href="https://github.com/imaneamn26" target="_blank" rel="noopener">GitHub</a>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main>
+
+    <!-- HERO -->
+    <section class="hero" id="top">
+      <h1>Je transforme des données brutes en <span class="grad-text">décisions claires</span>.</h1>
+      <p class="lede">Étudiante en informatique spécialisée en Data et IA, je conçois des pipelines qui collectent, nettoient et structurent l'information — jusqu'à des tableaux de bord que n'importe qui peut lire en un coup d'œil. En alternance à l'ISEP à partir de septembre 2026, rythme 2 jours entreprise / 3 jours école.</p>
+      <div class="cta-row">
+        <a class="btn btn-primary" href="#contact">Me contacter</a>
+        <a class="btn btn-ghost" href="#experience">Voir mon parcours</a>
+        <a class="btn btn-ghost" href="https://github.com/imaneamn26" target="_blank" rel="noopener">GitHub ↗</a>
+      </div>
+
+      <div class="pipeline-diagram">
+        <div class="diagram-label">Mon pipeline de travail</div>
+        <div class="pipeline-svg-wrap">
+          <svg class="pipeline-svg" viewBox="0 0 700 110" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Schéma du pipeline : collecte, nettoyage, modélisation, visualisation, décision">
+            <defs>
+              <linearGradient id="flowGradient" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0%" stop-color="#7C5CFC"/>
+                <stop offset="30%" stop-color="#FF5C87"/>
+                <stop offset="60%" stop-color="#FFB020"/>
+                <stop offset="85%" stop-color="#17B6D0"/>
+                <stop offset="100%" stop-color="#22C55E"/>
+              </linearGradient>
+            </defs>
+            <path class="flow-path" d="M60 55 H640"/>
+            <g class="flow-node n-violet" transform="translate(60,55)">
+              <circle r="9"/>
+              <text class="node-label" y="-20">Collecte</text>
+              <text class="node-sub" y="30">API · scraping</text>
+            </g>
+            <g class="flow-node n-coral" transform="translate(205,55)">
+              <circle r="9"/>
+              <text class="node-label" y="-20">Nettoyage</text>
+              <text class="node-sub" y="30">Power Query</text>
+            </g>
+            <g class="flow-node n-amber" transform="translate(350,55)">
+              <circle r="9"/>
+              <text class="node-label" y="-20">Modélisation</text>
+              <text class="node-sub" y="30">SQL · modèle en étoile</text>
+            </g>
+            <g class="flow-node n-cyan" transform="translate(495,55)">
+              <circle r="9"/>
+              <text class="node-label" y="-20">Visualisation</text>
+              <text class="node-sub" y="30">Power BI</text>
+            </g>
+            <g class="flow-node n-green" transform="translate(640,55)">
+              <circle r="9"/>
+              <text class="node-label" y="-20">Décision</text>
+              <text class="node-sub" y="30">KPIs clairs</text>
+            </g>
+          </svg>
+        </div>
+      </div>
+    </section>
+
+    <!-- PROFIL -->
+    <section id="profil">
+      <div class="eyebrow c-violet">SRC — Profil</div>
+      <h2>D'où je pars</h2>
+      <div class="profil-grid">
+        <div class="profil-text">
+          <p>Étudiante en informatique spécialisée en Data et IA, je rejoins l'ISEP (Institut Supérieur d'Électronique de Paris) en septembre 2026 en alternance. Je conçois des solutions numériques pour organiser l'information, automatiser les tâches répétitives et faciliter la prise de décision — du script Python qui nettoie un fichier brut au tableau de bord qui en tire un indicateur clair.</p>
+          <p>Ce qui me motive : comprendre en profondeur un problème avant de coder, documenter ce que je construis, et livrer quelque chose que d'autres peuvent réellement utiliser.</p>
+          <div class="interests">
+            <span class="interest-pill">Lecture — romans &amp; thrillers</span>
+            <span class="interest-pill">Voyage</span>
+            <span class="interest-pill">Basket-ball</span>
+          </div>
+        </div>
+        <div class="traits">
+          <div class="trait-card">
+            <div class="k">Atout 01</div>
+            <div class="v">Autonomie &amp; Apprentissage</div>
+          </div>
+          <div class="trait-card">
+            <div class="k">Atout 02</div>
+            <div class="v">Rigueur &amp; Structuration</div>
+          </div>
+          <div class="trait-card">
+            <div class="k">Langues</div>
+            <div class="v">Français (courant) · Anglais (B1)</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- EXPERIENCE -->
+    <section id="experience">
+      <div class="eyebrow c-coral">ETL — Expérience</div>
+      <h2>Ce que j'ai déjà construit</h2>
+
+      <div class="card">
+        <div class="card-head">
+          <div>
+            <div class="card-title">Football Visualizer</div>
+            <div class="card-org">Stage Data Engineering &amp; Web Scraping — EPSI Paris</div>
+          </div>
+          <div class="card-period">Avril — Juin 2026 · 3 mois</div>
+        </div>
+        <p class="card-desc">Plateforme web d'aide à la décision et de centralisation de données sportives, du pipeline de collecte jusqu'à l'interface de restitution.</p>
+
+        <div class="kpi-row">
+          <div class="kpi k-violet">
+            <div class="num">−64%</div>
+            <div class="lbl">Temps de collecte manuelle</div>
+          </div>
+          <div class="kpi k-cyan">
+            <div class="num">Temps réel</div>
+            <div class="lbl">Fréquence d'alimentation</div>
+          </div>
+        </div>
+
+        <ul class="bullet-list" style="--bullet-color:#D6255A">
+          <li>Conçu le <b>pipeline de données (ETL)</b> via API et web scraping pour une alimentation en temps réel.</li>
+          <li>Modélisé et stocké les données dans <b>Supabase</b> pour garantir l'intégrité et la disponibilité des informations.</li>
+          <li>Développé et déployé une interface de visualisation de statistiques sportives via <b>Flask</b>, hébergée sur <b>Vercel</b>.</li>
+        </ul>
+
+        <div class="tag-row tags-coral">
+          <span class="tag">Python</span>
+          <span class="tag">SQL</span>
+          <span class="tag">Flask</span>
+          <span class="tag">Supabase</span>
+          <span class="tag">API REST</span>
+          <span class="tag">Web Scraping</span>
+          <span class="tag">Vercel</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- PROJET BI EN COURS -->
+    <section id="projet-bi">
+      <div class="eyebrow c-amber">BI — Projet en cours</div>
+      <h2>Ce sur quoi je travaille en ce moment</h2>
+
+      <div class="card">
+        <div class="card-head">
+          <div>
+            <div class="card-title">Tableau de bord décisionnel</div>
+            <div class="card-org">Reporting Power BI pour le suivi des performances commerciales</div>
+          </div>
+          <span class="badge badge-progress">En cours</span>
+        </div>
+        <p class="card-desc">Conception et développement d'un reporting interactif complet permettant de suivre les performances commerciales à partir de données brutes.</p>
+
+        <ul class="bullet-list" style="--bullet-color:#C57F00">
+          <li><b>Modélisation et transformation des données :</b> nettoyage, structuration et création d'un modèle en étoile (tables Clients, Produits, Régions, Ventes) via Power Query.</li>
+          <li><b>Mesures DAX avancées :</b> chiffre d'affaires total, panier moyen, quantité vendue, taux d'annulation de commandes.</li>
+          <li><b>Expérience utilisateur :</b> menu de navigation dynamique, filtres croisés, infobulles contextuelles et signets (bookmarks) pour une analyse approfondie des ventes et des zones géographiques.</li>
+        </ul>
+
+        <div class="tag-row tags-amber">
+          <span class="tag">Power BI</span>
+          <span class="tag">Power Query</span>
+          <span class="tag">DAX</span>
+          <span class="tag">Modèle en étoile</span>
+          <span class="tag">UI/UX Reporting</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- PROJETS ACADEMIQUES -->
+    <section id="projets">
+      <div class="eyebrow c-cyan">LAB — Projets académiques</div>
+      <h2>Ce que j'expérimente à côté</h2>
+
+      <div class="project-grid">
+        <div class="card">
+          <div class="card-head">
+            <div>
+              <div class="card-title">Surveillance qualité de l'eau</div>
+              <div class="card-org">Projet IoT</div>
+            </div>
+            <div class="card-period">Jan — Fév 2026 · 2 mois</div>
+          </div>
+          <ul class="bullet-list" style="--bullet-color:#0E8DA3">
+            <li>Conçu un système de collecte en temps réel (ESP32) et automatisé le pipeline via Node-RED.</li>
+            <li>Intégré un <b>chatbot</b> au sein de l'interface web pour automatiser l'interprétation des données.</li>
+          </ul>
+          <div class="tag-row tags-cyan">
+            <span class="tag">ESP32</span>
+            <span class="tag">Node-RED</span>
+            <span class="tag">Dashboard temps réel</span>
+            <span class="tag">Chatbot</span>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <div>
+              <div class="card-title">Catalogue &amp; vente en ligne de vélo</div>
+              <div class="card-org">Projet e-commerce</div>
+            </div>
+            <div class="card-period">Nov — Déc 2025 · 1 mois</div>
+          </div>
+          <ul class="bullet-list" style="--bullet-color:var(--violet)">
+            <li>Développé une plateforme <b>full-stack</b> (PHP/SQL) avec interface dynamique et responsive.</li>
+            <li>Conçu une base de données relationnelle robuste (méthode <b>Merise</b>) pour la gestion des ventes.</li>
+          </ul>
+          <div class="tag-row tags-violet">
+            <span class="tag">HTML5</span>
+            <span class="tag">CSS3</span>
+            <span class="tag">PHP</span>
+            <span class="tag">SQL</span>
+            <span class="tag">Merise</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- COMPETENCES -->
+    <section id="competences">
+      <div class="eyebrow c-green">STACK — Compétences</div>
+      <h2>Ma boîte à outils</h2>
+
+      <div class="skills-grid">
+        <div class="skill-group">
+          <div class="g-title">Langages</div>
+          <div class="tag-row">
+            <span class="tag">Python</span><span class="tag">DAX</span><span class="tag">PHP</span><span class="tag">SQL</span><span class="tag">HTML5</span><span class="tag">CSS3</span>
+          </div>
+        </div>
+        <div class="skill-group">
+          <div class="g-title">Bases de données</div>
+          <div class="tag-row">
+            <span class="tag">Supabase</span><span class="tag">MySQL</span><span class="tag">MariaDB</span>
+          </div>
+        </div>
+        <div class="skill-group">
+          <div class="g-title">Data Engineering</div>
+          <div class="tag-row">
+            <span class="tag">Node-RED</span><span class="tag">ESP32 (IoT)</span><span class="tag">Web scraping</span><span class="tag">API REST</span><span class="tag">Nettoyage de données</span>
+          </div>
+        </div>
+        <div class="skill-group">
+          <div class="g-title">Data Visualisation</div>
+          <div class="tag-row">
+            <span class="tag">Power BI</span><span class="tag">Dashboards interactifs</span><span class="tag">Graphiques temps réel</span>
+          </div>
+        </div>
+        <div class="skill-group">
+          <div class="g-title">Méthodologies &amp; Outils</div>
+          <div class="tag-row">
+            <span class="tag">Agile (Scrum)</span><span class="tag">GitHub</span><span class="tag">ChatGPT</span><span class="tag">Blackbox AI</span><span class="tag">Copilot</span>
+          </div>
+        </div>
+        <div class="skill-group">
+          <div class="g-title">Systèmes &amp; réseaux</div>
+          <div class="tag-row">
+            <span class="tag">Linux (CLI)</span><span class="tag">Windows</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FORMATION -->
+    <section id="formation">
+      <div class="eyebrow c-violet">EDU — Formation</div>
+      <h2>Mon parcours académique</h2>
+
+      <div class="timeline">
+        <div class="tl-item">
+          <div class="tl-period">À partir de septembre 2026</div>
+          <div class="tl-title">ISEP — Institut Supérieur d'Électronique de Paris</div>
+          <div class="tl-sub">Bachelor Informatique et Projets Numériques, 2e année — Option TNI (Transformation Numérique de l'Industrie) — Paris</div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-period">Septembre 2025 — Juillet 2026</div>
+          <div class="tl-title">EPSI Paris</div>
+          <div class="tl-sub">Bachelor Sciences Informatiques et Numériques, 1re année</div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-period">Juin 2025</div>
+          <div class="tl-title">École Internationale Ufuk, Cotonou</div>
+          <div class="tl-sub">Baccalauréat Scientifique — Mention assez bien</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CONTACT -->
+    <section id="contact">
+      <div class="eyebrow c-coral">JOIN — Contact</div>
+      <h2>Discutons de votre besoin en Data</h2>
+      <div class="contact-grid">
+        <a class="contact-card" href="mailto:aminouimane605@gmail.com">
+          <span class="c-label">Email</span>
+          <span class="c-value">aminouimane605@gmail.com</span>
+        </a>
+        <a class="contact-card" href="tel:+33612040254">
+          <span class="c-label">Téléphone</span>
+          <span class="c-value">+33 6 12 04 02 54</span>
+        </a>
+        <a class="contact-card" href="https://linkedin.com/in/imane-aminou" target="_blank" rel="noopener">
+          <span class="c-label">LinkedIn</span>
+          <span class="c-value">in/imane-aminou</span>
+        </a>
+        <a class="contact-card" href="https://github.com/imaneamn26" target="_blank" rel="noopener">
+          <span class="c-label">GitHub</span>
+          <span class="c-value">imaneamn26</span>
+        </a>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<footer>
+  Imane Aminou — Portfolio Data &amp; IA · Mis à jour août 2026
+</footer>
+
+</body>
+</html>
